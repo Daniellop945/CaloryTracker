@@ -1,8 +1,9 @@
 'use client'
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart";
-import type { ChartConfig } from './chart';
-import useCalorie from '../../hooks/useCalorie'; // Importa el hook
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./chart"
+import type { ChartConfig } from './chart'
+import { useContext } from 'react'
+import { Context } from '~/contexts/calorieContext'
 
 const chartConfig = {
     quemadas: {
@@ -17,21 +18,21 @@ const chartConfig = {
 
 export function Graphs() {
     
-    const { caloriesBurned, caloriesConsumed } = useCalorie(); // Usa el hook
+    const {caloriesState} = useContext(Context)
 
     const chartData = [
-        { calorias: "Registro calorico", quemadas: caloriesBurned, consumidas: caloriesConsumed },
+        { calorias: "Registro calorico", quemadas: caloriesState.caloriesConsumed, consumidas: caloriesState.caloriesBurned }
     ];
 
     return (
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
             <BarChart accessibilityLayer data={chartData}>
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical={true} />
                 <XAxis
                     dataKey="calorias"
-                    tickLine={false}
+                    tickLine={true}
                     tickMargin={10}
-                    axisLine={false}
+                    axisLine={true}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="quemadas" fill="var(--color-quemadas)" />

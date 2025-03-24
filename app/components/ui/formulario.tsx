@@ -1,20 +1,20 @@
 'use client'
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { Button } from '../ui/button'
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { Card, CardContent, CardHeader, CardTitle } from "./card"
-import { Input } from "./input"
-import { Select } from "./select"
-import { Textarea } from "./textarea"
-import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
-import { Graphs } from './graphis'
-import { useLocalStorage } from "../../hooks/useLocalStorage"
-import { useEffect, useState } from "react"
-import { DynamicTable } from "./dynamicTable"
-import useCalorie from "~/hooks/useCalorie"
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { Button } from './button'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './form'
+import { Card, CardContent, CardHeader, CardTitle } from './card'
+import { Input } from './input'
+import { Select } from './select'
+import { Textarea } from './textarea'
+import { SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
+import { Graphs } from './graphs'
+import { useEffect, useState, useContext, useReducer } from 'react'
+import { DynamicTable } from './dynamicTable'
+import { Context } from '~/contexts/calorieContext'
+import { reducerActivities } from '~/hooks/useRegister'
 
 const options = z.enum(["Comida", "Ejercicio"]);
 
@@ -22,11 +22,11 @@ const formSchema = z.object({
     id: z.string(), 
     type: options,
     calories: z.string()
-    .refine(
-        (val) => /^\d+$/.test(val),
-        "Debe ingresar solo números enteros"
-    )
-    .transform(Number),
+        .refine(
+            (val) => /^\d+$/.test(val),
+            "Debe ingresar solo números enteros"
+        )
+        .transform(Number),
     description: z.string().min(3, {
         message : "Debes agregar al menos una actividad o alguna comida"
     })
@@ -34,9 +34,27 @@ const formSchema = z.object({
 
 export function Formulario () {
 
-    const [activity, setActivity, resetActivity] = useLocalStorage("datosActividad", {})
-    const [activitysStatus, setActivityStatus] = useState(activity)
-    const { consumeCalories, burnCalories, resetCalories } = useCalorie()
+    const getData = () => {
+        if(typeof window !== 'undefined'){
+            let data = localStorage.getItem('datosActividad')
+            if(data) {
+                return JSON.parse(data)
+            }
+            else {
+                return []
+            }
+        }
+    }
+
+    //Usar el context
+    const {caloriesState} = useContext(Context)
+    const {addCaloriesConsumed, addCaloriesBurned} = useContext(Context)
+
+    const [state, dispatch] = useReducer(reducerActivities, getData())
+
+    useEffect(() => {
+        localStorage.setItem('datosActividad', JSON.stringify(state))
+    }, [state])
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -48,14 +66,8 @@ export function Formulario () {
         },
     })
 
-    useEffect(()=>{
-        setActivityStatus(activity)      
-    }, [activity])
-
     function onSubmit(values: z.infer<typeof formSchema>){        
-        //Almaceno la informacion de los campos validados en el localStorage
-        setActivity(values.id, {type: values.type, calories: values.calories, description: values.description})    
-        alert('Datos almacenados correctamente')
+        
         //Reiniciar el formulario una vez que almaceno los datos
         form.reset({
             id: crypto.randomUUID(),
@@ -64,22 +76,24 @@ export function Formulario () {
             description: ""
         })
 
-        if(values.type === 'Comida') consumeCalories(values.calories)
-        else if(values.type === 'Ejercicio') burnCalories(values.calories)
+        dispatch({type: 'ADD_ACTIVITY', payload: values})
+        
+        if(values.type === 'Comida') addCaloriesConsumed(values.calories) 
+        else if(values.type === 'Ejercicio') addCaloriesBurned(values.calories)
 
+        alert('Datos almacenados correctamente')
     }
 
     function resetApp(){
         localStorage.clear();
-        resetActivity()
-        setActivityStatus({})
-        resetCalories()
+        caloriesState.caloriesConsumed = 0
+        caloriesState.caloriesBurned = 0
         alert('Se han borrado los datos correctamente')
     }
 
     return(
-        <div className="flex flex-wrap justify-center">
-            <Button className="bg-blue-600 text-white mt-4" onClick={()=>resetApp()}>Reiniciar app</Button>
+        <div className="flex flex-initial justify-center">
+            <Button className="bg-blue-600 text-white mt-4" onClick={ () => resetApp() }>Reiniciar app</Button>
             <Card className="max-w-md min-w-md mt-4 border-0 shadow-white bg-gray-800 m-4">
                 <CardHeader>
                     <CardTitle className="bg-violet-300 p-4 rounded-2xl text-center font-bold">
@@ -88,7 +102,7 @@ export function Formulario () {
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+                        <form onSubmit = {form.handleSubmit(onSubmit)} className='space-y-8'>
                             <FormField
                                 control={form.control}
                                 name = "type"

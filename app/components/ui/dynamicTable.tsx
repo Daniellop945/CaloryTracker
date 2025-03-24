@@ -1,51 +1,25 @@
 'use client';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { useReducer, useState } from 'react';
-import { Button } from "./button";
-import { Dialog, DialogContent, DialogDescription, DialogClose, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
-import { Textarea } from "./textarea";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useEffect, useReducer, useState } from 'react';
+import { Button } from './button';
+import { Dialog, DialogContent, DialogDescription, DialogClose, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
+import { Input } from './input';
+import { Label } from './label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+import { Textarea } from './textarea';
 import imgComida  from '../../images/comida.svg'
 import imgEjercicio  from '../../images/ejercicio.svg'
+import { reducerActivities } from '~/hooks/useRegister'
 
 function DynamicTable() {
+
     const x = localStorage.getItem('datosActividad');
 
     if (x === '{}' || x === undefined || x === null || x === '[]') return <h1 className="text-white">No hay datos para mostrar</h1>;
-
+    
     let arr = JSON.parse(x);
-    const a = [];
-
-    for (let i in arr) {
-        const b = { id: i, type: arr[i].type, calories: arr[i].calories, description: arr[i].description };
-        a.push(b);
-    }
-
-    const reducer = (state : any, action : any) => {
-        if (action.type === "delete") {
-            const newArr = state.filter((todo : any) => todo.id !== action.payload.id);
-            localStorage.setItem('datosActividad', JSON.stringify(newArr));
-            return newArr;
-        }
-
-        if (action.type === "edit") {
-            const updatedState = state.map((todo : any) => {
-                if (todo.id === action.payload.id) {
-                    return { ...todo, type: action.payload.type, calories: action.payload.calories, description: action.payload.description };
-                }
-                return todo;
-            });
-            localStorage.setItem('datosActividad', JSON.stringify(updatedState));
-            return updatedState;
-        }
-
-        return state;
-    };
-
-    const initialState = a;
-    let [todos, dispatch] = useReducer(reducer, initialState);
+    
+    const [todos, dispatch] = useReducer(reducerActivities, arr)
 
     return (
         <Table className="text-center">
@@ -58,7 +32,8 @@ function DynamicTable() {
                 </TableRow>
             </TableHeader>
             <TableBody className="bg-white">
-                {todos.map((todo : any) => (
+                {
+                todos.map((todo : any) => (
                     <TableRow key={todo.id}>
                         {todo.type === 'Comida' ? (
                             <TableCell>
@@ -74,7 +49,7 @@ function DynamicTable() {
                         <TableCell>
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button className="bg-blue-500 text-white mr-4">
+                                    <Button className="bg-blue-500 text-white mr-4" >
                                         Editar
                                     </Button>
                                 </DialogTrigger>
@@ -88,7 +63,7 @@ function DynamicTable() {
                                     <EditDialogContent todo={todo} dispatch={dispatch}/>
                                 </DialogContent>
                             </Dialog>
-                            <Button className="bg-red-500 text-white" onClick={() => dispatch({ type: 'delete', payload: { id: todo.id } })}>
+                            <Button className="bg-red-500 text-white" onClick={() => dispatch({ type: 'DELETE_ACTIVITY', payload: {id: todo.id} })}>
                                 Eliminar
                             </Button>
                         </TableCell>
@@ -130,7 +105,7 @@ function EditDialogContent({todo, dispatch }) {
                 <DialogClose asChild>
                     <Button className="bg-blue-500 text-amber-50" onClick={() =>
                         dispatch({
-                            type: 'edit', payload: { id: todo.id, type: editedType, calories: editedCalories, description: editedDescription }
+                            type: 'EDIT_ACTIVITY', payload: { id: todo.id, type: todo.type = editedType, calories: todo.calories = editedCalories, description: todo.description = editedDescription }
                         })}
                     >Guardar Cambios</Button>
                 </DialogClose>

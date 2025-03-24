@@ -1,34 +1,19 @@
-import { useContext } from 'react';
-import { CalorieContext } from './calorieContext'; // Ajusta la ruta si es necesario
+import type { caloriesState } from '~/interfaces/interfaces';
 
-const useCalorie = () => {
-    const context = useContext(CalorieContext);
+type Actions = 
+    | { type : 'addCaloriesConsumed', payload: number}
+    | { type : 'addCaloriesBurned', payload: number}
 
-    if (!context) {
-        throw new Error('useCalorie debe ser usado dentro de un CalorieProvider');
+export const reducerCalories = (state : caloriesState, action : Actions) => {
+    
+    switch (action.type){
+        case 'addCaloriesConsumed': 
+            return {...state, caloriesConsumed: state.caloriesConsumed + action.payload}
+        case 'addCaloriesBurned' :
+            return {...state, caloriesBurned: state.caloriesBurned + action.payload}
+        default: 
+            return state
     }
+    
+}
 
-    const { state , dispatch } = context;
-
-    const consumeCalories = (calories : any) => {
-        dispatch({ type: 'CONSUME_CALORIES', payload: calories });
-    };
-
-    const burnCalories = (calories : any) => {
-        dispatch({ type: 'BURN_CALORIES', payload: calories });
-    };
-
-    const resetCalories = () => {
-        dispatch({ type: 'RESET_CALORIES'})
-    }
-
-    return {
-        caloriesConsumed: state.caloriesConsumed,
-        caloriesBurned: state.caloriesBurned,
-        consumeCalories,
-        burnCalories,
-        resetCalories,
-    };
-};
-
-export default useCalorie;
