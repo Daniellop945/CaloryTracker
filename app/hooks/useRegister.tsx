@@ -5,6 +5,7 @@ type Actions =
     | { type: 'ADD_ACTIVITY', payload : {id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string}}
     | { type: 'EDIT_ACTIVITY', payload: {id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string}}
     | { type: 'DELETE_ACTIVITY', payload: {id: string }}
+    | { type: 'RESET_APP' }
 
 export const reducerActivities = (state: data, action: Actions): data => {
     
@@ -28,6 +29,8 @@ export const reducerActivities = (state: data, action: Actions): data => {
             })
             localStorage.setItem('datosActividad', JSON.stringify(updateState))
             return updateState
+        case 'RESET_APP':
+            return [] 
         default:
             return state
     }

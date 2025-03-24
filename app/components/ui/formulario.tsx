@@ -85,7 +85,8 @@ export function Formulario () {
     }
 
     function resetApp(){
-        localStorage.clear();
+        localStorage.clear()
+        dispatch({ type : 'RESET_APP' })
         caloriesState.caloriesConsumed = 0
         caloriesState.caloriesBurned = 0
         alert('Se han borrado los datos correctamente')
