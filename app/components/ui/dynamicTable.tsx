@@ -1,6 +1,6 @@
 'use client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { useEffect, useReducer, useState } from 'react';
+import { useState } from 'react';
 import { Button } from './button';
 import { Dialog, DialogContent, DialogDescription, DialogClose, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
 import { Input } from './input';
@@ -9,19 +9,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from './textarea';
 import imgComida  from '../../images/comida.svg'
 import imgEjercicio  from '../../images/ejercicio.svg'
-import { reducerActivities } from '~/hooks/useRegister'
+import type { data } from '~/interfaces/interfaces';
 
-function DynamicTable() {
+type Actions = 
+    | { type: 'ADD_ACTIVITY', payload : {id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string}}
+    | { type: 'EDIT_ACTIVITY', payload: {id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string}}
+    | { type: 'DELETE_ACTIVITY', payload: {id: string }}
+    | { type: 'RESET_APP' }
 
-    const x = localStorage.getItem('datosActividad');
+interface DynamicTableProps {
+    todos: data
+    dispatch: React.Dispatch<Actions>
+}
 
-    if (x === '{}' || x === undefined || x === null || x === '[]') return <h1 className="text-white">No hay datos para mostrar</h1>;
-    
-    let arr = JSON.parse(x);
-    
-    const [todos, dispatch] = useReducer(reducerActivities, arr)
-
+function DynamicTable({todos, dispatch} : DynamicTableProps) {
     return (
+        todos.length === 0 ? <h1 className='text-white'> No hay datos para mostrar </h1> : 
         <Table className="text-center">
             <TableHeader>
                 <TableRow className="bg-violet-400">
@@ -60,7 +63,7 @@ function DynamicTable() {
                                             Aqui puedes modificar tus registros
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <EditDialogContent todo={todo} dispatch={dispatch}/>
+                                    <EditDialogContent todo={todo}  dispatch={dispatch}/>
                                 </DialogContent>
                             </Dialog>
                             <Button className="bg-red-500 text-white" onClick={() => dispatch({ type: 'DELETE_ACTIVITY', payload: {id: todo.id} })}>
@@ -74,7 +77,7 @@ function DynamicTable() {
     );
 }
 
-function EditDialogContent({todo, dispatch }) {
+function EditDialogContent({todo, dispatch}) {
     const [editedType, setEditedType] = useState(todo.type);
     const [editedCalories, setEditedCalories] = useState(todo.calories);
     const [editedDescription, setEditedDescription] = useState(todo.description);

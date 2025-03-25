@@ -176,7 +176,7 @@ export function Formulario () {
                             </div>
                         </TabsContent>
                         <TabsContent value="dates">    
-                            <DynamicTable/>
+                            <DynamicTable todos = {state} dispatch = {dispatch}/>
                         </TabsContent>
                     </Tabs>
                     </CardContent>   
