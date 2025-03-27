@@ -11,7 +11,7 @@ import { Textarea } from './textarea'
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 import { Graphs } from './graphs'
-import { useEffect, useState, useContext, useReducer } from 'react'
+import { useEffect, useContext, useReducer, useState } from 'react'
 import { DynamicTable } from './dynamicTable'
 import { Context } from '~/contexts/calorieContext'
 import { reducerActivities } from '~/hooks/useRegister'
@@ -19,7 +19,7 @@ import { reducerActivities } from '~/hooks/useRegister'
 const options = z.enum(["Comida", "Ejercicio"]);
 
 const formSchema = z.object({
-    id: z.string(), 
+    id: z.string(),
     type: options,
     calories: z.string()
         .refine(
@@ -33,28 +33,23 @@ const formSchema = z.object({
 })
 
 export function Formulario () {
-
-    const getData = () => {
-        if(typeof window !== 'undefined'){
-            let data = localStorage.getItem('datosActividad')
-            if(data) {
-                return JSON.parse(data)
-            }
-            else {
-                return []
-            }
-        }
-    }
-
-    //Usar el context
-    const {caloriesState} = useContext(Context)
-    const {addCaloriesConsumed, addCaloriesBurned} = useContext(Context)
-
-    const [state, dispatch] = useReducer(reducerActivities, getData())
+    const [state, dispatch] = useReducer(reducerActivities, [])
+    const {caloriesState, addCaloriesConsumed, addCaloriesBurned, editCaloriesConsumed, editCaloriesBurned} = useContext(Context)
 
     useEffect(() => {
-        localStorage.setItem('datosActividad', JSON.stringify(state))
-    }, [state])
+        if (typeof window !== 'undefined') {
+            const storedData = localStorage.getItem('datosActividad');
+            if (storedData) {
+                dispatch({ type: 'REPLACE_STATE', payload: JSON.parse(storedData) });
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('datosActividad', JSON.stringify(state));
+        }
+    }, [state]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -66,9 +61,7 @@ export function Formulario () {
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>){        
-        
-        //Reiniciar el formulario una vez que almaceno los datos
+    function onSubmit(values: z.infer<typeof formSchema>){
         form.reset({
             id: crypto.randomUUID(),
             type: "Comida",
@@ -77,8 +70,8 @@ export function Formulario () {
         })
 
         dispatch({type: 'ADD_ACTIVITY', payload: values})
-        
-        if(values.type === 'Comida') addCaloriesConsumed(values.calories) 
+
+        if(values.type === 'Comida') addCaloriesConsumed(values.calories)
         else if(values.type === 'Ejercicio') addCaloriesBurned(values.calories)
 
         alert('Datos almacenados correctamente')
@@ -90,6 +83,27 @@ export function Formulario () {
         caloriesState.caloriesConsumed = 0
         caloriesState.caloriesBurned = 0
         alert('Se han borrado los datos correctamente')
+    }
+
+    function deleteActivity(activity : {id: string, type: 'Comida' | 'Ejercicio', calories: number}){
+        if (activity.type === 'Comida') {
+            editCaloriesConsumed(caloriesState.caloriesConsumed - activity.calories)
+        } else if (activity.type === 'Ejercicio') {
+            editCaloriesBurned(caloriesState.caloriesBurned - activity.calories)
+        }
+        dispatch({ type: 'DELETE_ACTIVITY', payload: activity });
+    }
+
+    function editActivity(activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }) {
+        dispatch({ type: 'EDIT_ACTIVITY', payload: activity });
+        if (activity.type === 'Comida') {
+            addCaloriesConsumed(activity.calories);
+            editCaloriesBurned(caloriesState.caloriesBurned - activity.calories)
+        }
+        else if (activity.type === 'Ejercicio') {
+            addCaloriesBurned(activity.calories)
+            editCaloriesConsumed(caloriesState.caloriesConsumed - activity.calories)
+        }
     }
 
     return(
@@ -176,7 +190,7 @@ export function Formulario () {
                             </div>
                         </TabsContent>
                         <TabsContent value="dates">    
-                            <DynamicTable todos = {state} dispatch = {dispatch}/>
+                            <DynamicTable todos = {state} onDelete={deleteActivity} onEdit={editActivity} />
                         </TabsContent>
                     </Tabs>
                     </CardContent>   

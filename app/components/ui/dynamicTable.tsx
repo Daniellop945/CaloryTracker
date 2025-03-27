@@ -7,77 +7,76 @@ import { Input } from './input';
 import { Label } from './label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Textarea } from './textarea';
-import imgComida  from '../../images/comida.svg'
-import imgEjercicio  from '../../images/ejercicio.svg'
+import imgComida from '../../images/comida.svg';
+import imgEjercicio from '../../images/ejercicio.svg';
 import type { data } from '~/interfaces/interfaces';
 
-type Actions = 
-    | { type: 'ADD_ACTIVITY', payload : {id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string}}
-    | { type: 'EDIT_ACTIVITY', payload: {id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string}}
-    | { type: 'DELETE_ACTIVITY', payload: {id: string }}
-    | { type: 'RESET_APP' }
-
 interface DynamicTableProps {
-    todos: data
-    dispatch: React.Dispatch<Actions>
+    todos: data;
+    onDelete: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number }) => void;
+    onEdit: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }) => void;
 }
 
-function DynamicTable({todos, dispatch} : DynamicTableProps) {
+function DynamicTable({ todos, onDelete, onEdit }: DynamicTableProps) {
     return (
-        todos.length === 0 ? <h1 className='text-white'> No hay datos para mostrar </h1> : 
-        <Table className="text-center">
-            <TableHeader>
-                <TableRow className="bg-violet-400">
-                    <TableHead className="text-center">Tipo</TableHead>
-                    <TableHead className="text-center">Actividades</TableHead>
-                    <TableHead className="text-center">Calorias</TableHead>
-                    <TableHead className="text-center">Operaciones</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody className="bg-white">
-                {
-                todos.map((todo : any) => (
-                    <TableRow key={todo.id}>
-                        {todo.type === 'Comida' ? (
-                            <TableCell>
-                                <img src = {imgComida} alt = "Comida" /> Comida
-                            </TableCell>
-                            ) :
-                            <TableCell>
-                                <img src = {imgEjercicio} alt = "Ejercicio" /> Ejercicio
-                            </TableCell>
-                        }
-                        <TableCell>{todo.description}</TableCell>
-                        <TableCell>{todo.calories}</TableCell>
-                        <TableCell>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button className="bg-blue-500 text-white mr-4" >
-                                        Editar
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[400px] bg-black">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-white"> Editar registro </DialogTitle>
-                                        <DialogDescription className="text-white">
-                                            Aqui puedes modificar tus registros
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <EditDialogContent todo={todo}  dispatch={dispatch}/>
-                                </DialogContent>
-                            </Dialog>
-                            <Button className="bg-red-500 text-white" onClick={() => dispatch({ type: 'DELETE_ACTIVITY', payload: {id: todo.id} })}>
-                                Eliminar
-                            </Button>
-                        </TableCell>
+        todos.length === 0 ? <h1 className='text-white'> No hay datos para mostrar </h1> :
+            <Table className="text-center">
+                <TableHeader>
+                    <TableRow className="bg-violet-400">
+                        <TableHead className="text-center">Tipo</TableHead>
+                        <TableHead className="text-center">Actividades</TableHead>
+                        <TableHead className="text-center">Calorias</TableHead>
+                        <TableHead className="text-center">Operaciones</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody className="bg-white">
+                    {todos.map((todo: any) => (
+                        <TableRow key={todo.id}>
+                            {todo.type === 'Comida' ? (
+                                <TableCell>
+                                    <img src={imgComida} alt="Comida" /> Comida
+                                </TableCell>
+                            ) : (
+                                <TableCell>
+                                    <img src={imgEjercicio} alt="Ejercicio" /> Ejercicio
+                                </TableCell>
+                            )}
+                            <TableCell>{todo.description}</TableCell>
+                            <TableCell>{todo.calories}</TableCell>
+                            <TableCell>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="bg-blue-500 text-white mr-4">
+                                            Editar
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[400px] bg-black">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-white"> Editar registro </DialogTitle>
+                                            <DialogDescription className="text-white">
+                                                Aqui puedes modificar tus registros
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <EditDialogContent todo={todo} onEdit={onEdit} />
+                                    </DialogContent>
+                                </Dialog>
+                                <Button className="bg-red-500 text-white" onClick={() => onDelete(todo)}>
+                                    Eliminar
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
     );
 }
 
-function EditDialogContent({todo, dispatch}) {
+interface EditDialogContentProps {
+    todo: any;
+    onEdit: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }) => void;
+}
+
+function EditDialogContent({ todo, onEdit }: EditDialogContentProps) {
     const [editedType, setEditedType] = useState(todo.type);
     const [editedCalories, setEditedCalories] = useState(todo.calories);
     const [editedDescription, setEditedDescription] = useState(todo.description);
@@ -106,11 +105,14 @@ function EditDialogContent({todo, dispatch}) {
             </div>
             <div className="flex flex-col justify-center">
                 <DialogClose asChild>
-                    <Button className="bg-blue-500 text-amber-50" onClick={() =>
-                        dispatch({
-                            type: 'EDIT_ACTIVITY', payload: { id: todo.id, type: todo.type = editedType, calories: todo.calories = editedCalories, description: todo.description = editedDescription }
-                        })}
-                    >Guardar Cambios</Button>
+                    <Button className="bg-blue-500 text-amber-50" onClick={() => {
+                        onEdit({
+                            id: todo.id,
+                            type: editedType,
+                            calories: Number(editedCalories),
+                            description: editedDescription,
+                        });
+                    }}>Guardar Cambios</Button>
                 </DialogClose>
             </div>
         </div>
