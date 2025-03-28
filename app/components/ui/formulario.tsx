@@ -94,12 +94,13 @@ export function Formulario () {
         dispatch({ type: 'DELETE_ACTIVITY', payload: activity });
     }
 
-    function editActivity(activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }, beforeType: 'Comida' | 'Ejercicio') {
+    function editActivity(activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }, beforeType: 'Comida' | 'Ejercicio', beforeCalories: number) {
+        
         if(beforeType === 'Comida') {
-            editCaloriesConsumed(caloriesState.caloriesConsumed - activity.calories)
+            editCaloriesConsumed(caloriesState.caloriesConsumed - beforeCalories)
         }
         else {
-            editCaloriesBurned(caloriesState.caloriesBurned - activity.calories)
+            editCaloriesBurned(caloriesState.caloriesBurned - beforeCalories)
         }
         dispatch({ type: 'EDIT_ACTIVITY', payload: activity });
         if(activity.type === 'Comida') {

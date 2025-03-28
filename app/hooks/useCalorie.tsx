@@ -6,7 +6,6 @@ type Actions =
     | { type : 'addCaloriesBurned', payload: number }
     | { type : 'editCaloriesConsumed', payload: number }
     | { type : 'editCaloriesBurned', payload: number }
-
     
 const getInitialState = (): caloriesState => {
     if (typeof window !== 'undefined') {
