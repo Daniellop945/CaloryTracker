@@ -1,10 +1,20 @@
-import { createContext, useReducer, type JSX } from "react";
+import { createContext, useEffect, useReducer, type JSX } from "react";
 import type { caloriesState } from "~/interfaces/interfaces";
 import { reducerCalories } from '../hooks/useCalorie'
 
-const initialState: caloriesState = {
-    caloriesConsumed: 0,
-    caloriesBurned: 0
+const getInitialState = (): caloriesState => {
+    if(typeof window !== 'undefined') {
+        const storedData = localStorage.getItem('caloriesState')
+        if(storedData) {
+            return JSON.parse(storedData)
+        }
+        else {
+            const initialState: caloriesState = { caloriesConsumed: 0, caloriesBurned: 0 };
+            localStorage.setItem('caloriesState', JSON.stringify(initialState))
+            return initialState
+        }
+    }
+    return { caloriesConsumed: 0, caloriesBurned: 0 }
 }
 
 interface props {
@@ -23,7 +33,13 @@ export const Context = createContext<calorieContextProps >({} as calorieContextP
 
 export const ContextProvider = ({ children } : props) => {
     
-    const [caloriesState, dispatch] = useReducer(reducerCalories, initialState)
+    const [caloriesState, dispatch] = useReducer(reducerCalories, getInitialState())
+
+    useEffect(() => {
+        if(typeof window !== 'undefined'){
+            localStorage.setItem('caloriesState', JSON.stringify(caloriesState))
+        }
+    }, [caloriesState])
 
     const addCaloriesConsumed = (calories : number) => {
         dispatch({ type: 'addCaloriesConsumed', payload: calories })

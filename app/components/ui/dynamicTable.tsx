@@ -14,7 +14,7 @@ import type { data } from '~/interfaces/interfaces';
 interface DynamicTableProps {
     todos: data;
     onDelete: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number }) => void;
-    onEdit: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }) => void;
+    onEdit: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }, beforeType: 'Comida' | 'Ejercicio') => void;
 }
 
 function DynamicTable({ todos, onDelete, onEdit }: DynamicTableProps) {
@@ -73,7 +73,7 @@ function DynamicTable({ todos, onDelete, onEdit }: DynamicTableProps) {
 
 interface EditDialogContentProps {
     todo: any;
-    onEdit: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }) => void;
+    onEdit: (activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }, beforeType: 'Comida' | 'Ejercicio') => void;
 }
 
 function EditDialogContent({ todo, onEdit }: EditDialogContentProps) {
@@ -111,7 +111,7 @@ function EditDialogContent({ todo, onEdit }: EditDialogContentProps) {
                             type: editedType,
                             calories: Number(editedCalories),
                             description: editedDescription,
-                        });
+                        }, todo.type);
                     }}>Guardar Cambios</Button>
                 </DialogClose>
             </div>

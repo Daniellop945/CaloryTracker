@@ -11,7 +11,7 @@ import { Textarea } from './textarea'
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 import { Graphs } from './graphs'
-import { useEffect, useContext, useReducer, useState } from 'react'
+import { useEffect, useContext, useReducer } from 'react'
 import { DynamicTable } from './dynamicTable'
 import { Context } from '~/contexts/calorieContext'
 import { reducerActivities } from '~/hooks/useRegister'
@@ -94,15 +94,19 @@ export function Formulario () {
         dispatch({ type: 'DELETE_ACTIVITY', payload: activity });
     }
 
-    function editActivity(activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }) {
-        dispatch({ type: 'EDIT_ACTIVITY', payload: activity });
-        if (activity.type === 'Comida') {
-            addCaloriesConsumed(activity.calories);
+    function editActivity(activity: { id: string, type: 'Comida' | 'Ejercicio', calories: number, description: string }, beforeType: 'Comida' | 'Ejercicio') {
+        if(beforeType === 'Comida') {
+            editCaloriesConsumed(caloriesState.caloriesConsumed - activity.calories)
+        }
+        else {
             editCaloriesBurned(caloriesState.caloriesBurned - activity.calories)
         }
-        else if (activity.type === 'Ejercicio') {
+        dispatch({ type: 'EDIT_ACTIVITY', payload: activity });
+        if(activity.type === 'Comida') {
+            addCaloriesConsumed(activity.calories)
+        }
+        else{
             addCaloriesBurned(activity.calories)
-            editCaloriesConsumed(caloriesState.caloriesConsumed - activity.calories)
         }
     }
 

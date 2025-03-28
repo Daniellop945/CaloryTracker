@@ -21,7 +21,7 @@ export function Graphs() {
     const {caloriesState} = useContext(Context)
 
     const chartData = [
-        { calorias: "Registro calorico", quemadas: caloriesState.caloriesConsumed, consumidas: caloriesState.caloriesBurned }
+        { calorias: "Registro calorico", quemadas: caloriesState.caloriesBurned, consumidas: caloriesState.caloriesConsumed }
     ];
 
     return (
