@@ -32,8 +32,18 @@ const formSchema = z.object({
     })
 })
 
+function getInitialState() {
+    if (typeof window !== 'undefined') {
+        const storedData = localStorage.getItem('datosActividad');
+        if (storedData) {
+            return JSON.parse(storedData);
+        }
+    }
+    return [];
+}
+
 export function Formulario () {
-    const [state, dispatch] = useReducer(reducerActivities, [])
+    const [state, dispatch] = useReducer(reducerActivities, getInitialState())
     const {caloriesState, addCaloriesConsumed, addCaloriesBurned, editCaloriesConsumed, editCaloriesBurned} = useContext(Context)
 
     useEffect(() => {
@@ -112,7 +122,7 @@ export function Formulario () {
     }
 
     return(
-        <div className="flex flex-initial justify-center">
+        <div className="flex flex-wrap justify-center">
             <Button className="bg-blue-600 text-white mt-4" onClick={ () => resetApp() }>Reiniciar app</Button>
             <Card className="max-w-md min-w-md mt-4 border-0 shadow-white bg-gray-800 m-4">
                 <CardHeader>
@@ -176,8 +186,8 @@ export function Formulario () {
                     </Form>
                 </CardContent>
             </Card>
-            <div >
-                <Card className="mt-4 border-0 shadow-white bg-gray-800 max-w-md min-w-md">
+            <div>
+                <Card className="mt-4 border-0 shadow-white bg-gray-800 max-w-md min-w-md overflow-y-auto max-h-[500px]">
                     <CardHeader>
                         <CardTitle className="bg-violet-300 p-4 rounded-2xl text-center font-bold">
                             Datos Registrados
