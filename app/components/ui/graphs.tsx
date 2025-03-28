@@ -7,11 +7,11 @@ import { Context } from '~/contexts/calorieContext'
 
 const chartConfig = {
     quemadas: {
-        label: "Calorías quemadas",
+        label: "Calorías quemadas: ",
         color: "#F44336",
     },
     consumidas: {
-        label: "Calorías consumidas",
+        label: "Calorías consumidas: ",
         color: "#FF9800",
     }
 } satisfies ChartConfig;
@@ -33,8 +33,9 @@ export function Graphs() {
                     tickLine={true}
                     tickMargin={10}
                     axisLine={true}
+                    tick={{fontSize:16}}
                 />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent className="text-lg bg-white" />} />
                 <Bar dataKey="quemadas" fill="var(--color-quemadas)" />
                 <Bar dataKey="consumidas" fill="var(--color-consumidas)" />
             </BarChart>
